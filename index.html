@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PIX Recovery — Painel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #1a1a25;
+      --border: #2a2a3a;
+      --accent: #00e5a0;
+      --accent2: #7c6cff;
+      --accent3: #ff6b35;
+      --warn: #ffcc00;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --success: #00e5a0;
+      --danger: #ff4757;
+      --font-body: 'Syne', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .nav {
+      padding: 16px 12px;
+      flex: 1;
+    }
+
+    .nav-section {
+      margin-bottom: 24px;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      padding: 0 12px;
+      margin-bottom: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: rgba(0, 229, 160, 0.1); color: var(--accent); }
+    .nav-item.active .nav-icon { color: var(--accent); }
+
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+    .wa-status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+      margin-left: auto;
+      transition: background 0.3s;
+    }
+    .wa-status-dot.connected { background: var(--success); animation: pulse 2s infinite; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    /* MAIN */
+    .main {
+      margin-left: 240px;
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 60px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      gap: 16px;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .topbar-badge {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 4px 10px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .content {
+      padding: 32px;
+      flex: 1;
+    }
+
+    /* PAGE SECTIONS */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* CARDS */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .stat-card.green::before { background: var(--accent); }
+    .stat-card.purple::before { background: var(--accent2); }
+    .stat-card.orange::before { background: var(--accent3); }
+    .stat-card.yellow::before { background: var(--warn); }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-card.green .stat-value { color: var(--accent); }
+    .stat-card.purple .stat-value { color: var(--accent2); }
+    .stat-card.orange .stat-value { color: var(--accent3); }
+    .stat-card.yellow .stat-value { color: var(--warn); }
+
+    .stat-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* TABLE */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 14px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 3px 8px;
+      border-radius: 100px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-pending { background: rgba(255, 204, 0, 0.15); color: var(--warn); border: 1px solid rgba(255, 204, 0, 0.3); }
+    .badge-paid { background: rgba(0, 229, 160, 0.15); color: var(--accent); border: 1px solid rgba(0, 229, 160, 0.3); }
+    .badge-replied { background: rgba(124, 108, 255, 0.15); color: var(--accent2); border: 1px solid rgba(124, 108, 255, 0.3); }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+    .btn-primary:hover { filter: brightness(1.1); }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid rgba(255,71,87,0.3);
+    }
+    .btn-danger:hover { background: rgba(255,71,87,0.1); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { background: var(--surface2); }
+
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    /* WHATSAPP PAGE */
+    .wa-panel {
+      max-width: 480px;
+    }
+
+    .wa-status-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .wa-status-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .wa-status-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .wa-status-desc {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .qr-container {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      display: inline-block;
+      margin: 16px 0;
+    }
+
+    .qr-container img { display: block; max-width: 200px; }
+
+    .btn-large {
+      padding: 14px 28px;
+      font-size: 15px;
+      border-radius: 10px;
+    }
+
+    /* CONFIG PAGE */
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    textarea, input[type="text"], input[type="number"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.6;
+      resize: vertical;
+      transition: border-color 0.15s;
+    }
+
+    textarea:focus, input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    textarea { min-height: 180px; }
+
+    .vars-hint {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    .vars-hint span {
+      background: var(--surface2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 4px;
+    }
+
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .schedule-item:last-child { border-bottom: none; }
+
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 100px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; bottom: 3px;
+      background: var(--muted);
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::before {
+      transform: translateX(18px);
+      background: #000;
+    }
+
+    .schedule-info { flex: 1; }
+    .schedule-name { font-size: 14px; font-weight: 600; }
+    .schedule-desc { font-size: 12px; color: var(--muted); }
+
+    /* LOGS */
+    .log-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .log-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .log-dot.success { background: var(--success); }
+    .log-dot.error { background: var(--danger); }
+    .log-dot.info { background: var(--accent2); }
+    .log-dot.warning { background: var(--warn); }
+
+    .log-time { color: var(--muted); font-family: var(--font-mono); font-size: 11px; white-space: nowrap; }
+
+    /* WEBHOOK INFO */
+    .webhook-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+
+    .webhook-platform {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .webhook-url {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      transition: color 0.15s;
+    }
+
+    .copy-btn:hover { color: var(--accent); }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 14px;
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* PHONE FORMAT */
+    .phone-display {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* LINK */
+    .pix-link-cell {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pix-link-cell a {
+      color: var(--accent2);
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .pix-link-cell a:hover { text-decoration: underline; }
+
+    /* Actions row */
+    .actions-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .refresh-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 6px 10px;
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+
+    .refresh-btn:hover { background: var(--surface2); color: var(--text); }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    @media (max-width: 1200px) {
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">⚡</div>
+      <span class="logo-text">PIX Recovery</span>
+    </div>
+    <div class="logo-sub">v1.0 · Automação</div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-section">
+      <div class="nav-label">Principal</div>
+      <button class="nav-item active" data-page="dashboard">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </button>
+      <button class="nav-item" data-page="payments">
+        <span class="nav-icon">💳</span>
+        Pagamentos PIX
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">WhatsApp</div>
+      <button class="nav-item" data-page="whatsapp">
+        <span class="nav-icon">📱</span>
+        Conexão WA
+        <span class="wa-status-dot" id="sidebarWaDot"></span>
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Configurações</div>
+      <button class="nav-item" data-page="message">
+        <span class="nav-icon">✉️</span>
+        Mensagem
+      </button>
+      <button class="nav-item" data-page="schedules">
+        <span class="nav-icon">⏱️</span>
+        Agendamentos
+      </button>
+      <button class="nav-item" data-page="webhooks">
+        <span class="nav-icon">🔗</span>
+        Webhooks
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Sistema</div>
+      <button class="nav-item" data-page="logs">
+        <span class="nav-icon">📋</span>
+        Logs
+      </button>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    Sistema ativo · Aguardando eventos
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="pageTitle">Dashboard</span>
+    <span class="topbar-badge" id="topbarTime">--:--</span>
+    <span class="topbar-badge" id="waStatusBadge">WA: desconectado</span>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <section class="page active" id="page-dashboard">
+      <div class="grid-4">
+        <div class="stat-card orange">
+          <div class="stat-label">Total de PIX</div>
+          <div class="stat-value" id="statTotal">0</div>
+          <div class="stat-sub">gerados</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">PIX Pagos</div>
+          <div class="stat-value" id="statPaid">0</div>
+          <div class="stat-sub">confirmados</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">PIX Pendentes</div>
+          <div class="stat-value" id="statPending">0</div>
+          <div class="stat-sub">aguardando</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Msgs Enviadas</div>
+          <div class="stat-value" id="statMsgs">0</div>
+          <div class="stat-sub">via WhatsApp</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Atividade Recente</div>
+        <button class="refresh-btn" onclick="loadStats()">↻ Atualizar</button>
+      </div>
+      <div class="table-wrap">
+        <div id="logsContainer">
+          <div class="empty-state"><div class="icon">📭</div><p>Sem atividade ainda</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAYMENTS -->
+    <section class="page" id="page-payments">
+      <div class="section-header">
+        <div class="section-title">Pagamentos PIX</div>
+        <div class="actions-row">
+          <button class="refresh-btn" onclick="loadPayments()">↻ Atualizar</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div id="paymentsContainer">
+          <div class="empty-state"><div class="icon">💳</div><p>Nenhum PIX registrado</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHATSAPP -->
+    <section class="page" id="page-whatsapp">
+      <div class="wa-panel">
+        <div class="wa-status-card" id="waCard">
+          <div class="wa-status-icon" id="waIcon">📱</div>
+          <div class="wa-status-title" id="waTitle">WhatsApp Desconectado</div>
+          <div class="wa-status-desc" id="waDesc">Clique em conectar para gerar o QR Code e vincular seu WhatsApp ao sistema.</div>
+          <div id="waQrContainer"></div>
+          <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <button class="btn btn-primary btn-large" id="waConnectBtn" onclick="connectWA()">📲 Conectar WhatsApp</button>
+            <button class="btn btn-danger btn-large" id="waDisconnectBtn" onclick="disconnectWA()" style="display:none">🔌 Desconectar</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Testar Envio</div>
+          <div class="card-sub">Envie uma mensagem de teste para um número</div>
+          <label>Número (com DDI, ex: 5548999999999)</label>
+          <input type="text" id="testPhone" placeholder="5548999999999" style="margin-bottom:12px">
+          <label>Mensagem</label>
+          <textarea id="testMessage" rows="3" placeholder="Mensagem de teste...">Olá! Teste de integração PIX Recovery. ✅</textarea>
+          <button class="btn btn-primary" style="margin-top:12px; width:100%" onclick="sendTestMessage()">Enviar Teste</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MESSAGE CONFIG -->
+    <section class="page" id="page-message">
+      <div style="max-width: 720px">
+        <div class="card">
+          <div class="card-title">Mensagem de Recuperação</div>
+          <div class="card-sub">Esta mensagem será enviada automaticamente para clientes com PIX pendente.</div>
+          <label>Texto da mensagem</label>
+          <textarea id="messageText" rows="8" placeholder="Digite a mensagem..."></textarea>
+          <div class="vars-hint">
+            Variáveis disponíveis:
+            <span>{nome}</span>
+            <span>{link_pix}</span>
+          </div>
+          <div style="margin-top: 20px; display:flex; gap:12px">
+            <button class="btn btn-primary" onclick="saveMessage()">💾 Salvar Mensagem</button>
+            <button class="btn btn-outline" onclick="loadConfig()">↺ Resetar</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:24px">
+          <div class="card-title">Prévia da Mensagem</div>
+          <div class="card-sub">Como a mensagem ficará para o cliente</div>
+          <div id="messagePreview" style="background: var(--bg); border: 1px solid var(--border); border-radius:8px; padding:16px; font-size:14px; line-height:1.8; white-space:pre-wrap; color: var(--text)"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCHEDULES -->
+    <section class="page" id="page-schedules">
+      <div style="max-width: 480px">
+        <div class="card">
+          <div class="card-title">Agendamentos de Envio</div>
+          <div class="card-sub">Defina quando as mensagens devem ser enviadas após geração do PIX</div>
+          <div id="schedulesContainer"></div>
+          <button class="btn btn-primary" style="margin-top:20px; width:100%" onclick="saveSchedules()">💾 Salvar Agendamentos</button>
+        </div>
+
+        <div class="card" style="margin-top:24px; background: rgba(124, 108, 255, 0.05); border-color: rgba(124,108,255,0.2)">
+          <div class="card-title" style="color: var(--accent2)">📌 Como funciona</div>
+          <div style="font-size:13px; color: var(--muted); line-height: 1.7; margin-top:8px">
+            <p>1. Sistema recebe webhook de PIX gerado</p>
+            <p>2. Registra os dados do cliente</p>
+            <p>3. Aguarda o tempo configurado</p>
+            <p>4. Verifica se o pagamento ainda está pendente</p>
+            <p>5. Se pendente, envia mensagem via WhatsApp</p>
+            <p style="margin-top:8px; color: var(--accent2)">⚠️ Se o cliente responder, a automação é pausada automaticamente.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WEBHOOKS -->
+    <section class="page" id="page-webhooks">
+      <div style="max-width: 640px">
+        <div class="card" style="margin-bottom:24px">
+          <div class="card-title">Endpoints de Webhook</div>
+          <div class="card-sub">Configure estes URLs nas plataformas de pagamento</div>
+        </div>
+
+        <div class="webhook-card" id="webhookKiwify">
+          <div class="webhook-platform">🟢 Kiwify</div>
+          <div class="webhook-url">
+            <span id="wkKiwify">Carregando...</span>
+            <button class="copy-btn" onclick="copyWebhook('wkKiwify')">📋</button>
+          </div>
+          <div style="margin-top:12px; font-size:12px; color: var(--muted)">
+            Configure em: Kiwify → Produtos → Integrações → Webhooks → Novo webhook
+          </div>
+        </div>
+
+        <div class="webhook-card" id="webhookHotmart">
+          <div class="webhook-platform">🔴 Hotmart</div>
+          <div class="webhook-url">
+            <span id="wkHotmart">Carregando...</span>
+            <button class="copy-btn" onclick="copyWebhook('wkHotmart')">📋</button>
+          </div>
+          <div style="margin-top:12px; font-size:12px; color: var(--muted)">
+            Configure em: Hotmart → Ferramentas → Webhooks → Criar webhook
+          </div>
+        </div>
+
+        <div class="webhook-card">
+          <div class="webhook-platform">🔵 Teste (POST manual)</div>
+          <div class="webhook-url">
+            <span id="wkTest">Carregando...</span>
+            <button class="copy-btn" onclick="copyWebhook('wkTest')">📋</button>
+          </div>
+          <div style="margin-top:12px; font-size:12px; color: var(--muted); margin-bottom:12px">
+            Envie um POST com: customer_name, customer_phone, pix_link
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="sendTestWebhook()">🧪 Enviar PIX de Teste</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGS -->
+    <section class="page" id="page-logs">
+      <div class="section-header">
+        <div class="section-title">Logs do Sistema</div>
+        <button class="refresh-btn" onclick="loadLogs()">↻ Atualizar</button>
+      </div>
+      <div class="table-wrap" id="logsFullContainer">
+        <div class="empty-state"><div class="icon">📋</div><p>Nenhum log ainda</p></div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // =============================================================================
+  // NAVIGATION
+  // =============================================================================
+  const pageTitles = {
+    dashboard: 'Dashboard',
+    payments: 'Pagamentos PIX',
+    whatsapp: 'Conexão WhatsApp',
+    message: 'Configuração de Mensagem',
+    schedules: 'Agendamentos',
+    webhooks: 'Webhooks',
+    logs: 'Logs do Sistema'
+  };
+
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = btn.dataset.page;
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('page-' + page).classList.add('active');
+      document.getElementById('pageTitle').textContent = pageTitles[page] || page;
+      
+      if (page === 'dashboard') { loadStats(); loadRecentLogs(); }
+      if (page === 'payments') loadPayments();
+      if (page === 'whatsapp') pollWAStatus();
+      if (page === 'message' || page === 'schedules') loadConfig();
+      if (page === 'webhooks') loadWebhookInfo();
+      if (page === 'logs') loadLogs();
+    });
+  });
+
+  // =============================================================================
+  // CLOCK
+  // =============================================================================
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('topbarTime').textContent = 
+      now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // =============================================================================
+  // TOAST
+  // =============================================================================
+  function showToast(msg, type = 'info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show';
+    t.style.borderColor = type === 'success' ? 'rgba(0,229,160,0.4)' : type === 'error' ? 'rgba(255,71,87,0.4)' : 'var(--border)';
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // =============================================================================
+  // STATS / DASHBOARD
+  // =============================================================================
+  async function loadStats() {
+    try {
+      const r = await fetch('/api/stats');
+      const data = await r.json();
+      document.getElementById('statTotal').textContent = data.total;
+      document.getElementById('statPaid').textContent = data.paid;
+      document.getElementById('statPending').textContent = data.pending;
+      document.getElementById('statMsgs').textContent = data.messagesSent;
+    } catch(e) {}
+  }
+
+  async function loadRecentLogs() {
+    try {
+      const r = await fetch('/api/logs');
+      const logs = await r.json();
+      const container = document.getElementById('logsContainer');
+      if (!logs.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Sem atividade ainda</p></div>';
+        return;
+      }
+      container.innerHTML = logs.slice(0, 15).map(l => `
+        <div class="log-item">
+          <div class="log-dot ${l.type}"></div>
+          <div style="flex:1">${l.message}</div>
+          <div class="log-time">${formatDateTime(l.timestamp)}</div>
+        </div>
+      `).join('');
+    } catch(e) {}
+  }
+
+  // =============================================================================
+  // PAYMENTS
+  // =============================================================================
+  async function loadPayments() {
+    try {
+      const r = await fetch('/api/payments');
+      const payments = await r.json();
+      const container = document.getElementById('paymentsContainer');
+      
+      if (!payments.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">💳</div><p>Nenhum PIX registrado ainda.<br>Configure seus webhooks para começar.</p></div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Telefone</th>
+              <th>Link PIX</th>
+              <th>Plataforma</th>
+              <th>Status</th>
+              <th>Msgs</th>
+              <th>Data</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${payments.map(p => `
+              <tr>
+                <td>
+                  <div style="font-weight:600">${p.customer_name}</div>
+                  ${p.replied ? '<div style="font-size:11px; color:var(--accent2)">↩ respondeu</div>' : ''}
+                </td>
+                <td class="phone-display">${formatPhone(p.customer_phone)}</td>
+                <td class="pix-link-cell">
+                  ${p.pix_link ? `<a href="${p.pix_link}" target="_blank">🔗 Abrir link</a>` : '<span style="color:var(--muted)">—</span>'}
+                </td>
+                <td><span style="font-size:11px; font-family:var(--font-mono)">${p.platform}</span></td>
+                <td>
+                  <span class="badge badge-${p.status === 'paid' ? 'paid' : p.replied ? 'replied' : 'pending'}">
+                    ${p.status === 'paid' ? '✓ pago' : p.replied ? '↩ respondeu' : '⏳ pendente'}
+                  </span>
+                </td>
+                <td style="text-align:center">
+                  <span style="font-family:var(--font-mono); font-size:12px">${p.messages_sent?.filter(m=>m.success).length || 0}</span>
+                </td>
+                <td style="font-size:12px; color:var(--muted)">${formatDateTime(p.created_at)}</td>
+                <td>
+                  <button class="btn btn-danger btn-sm" onclick="deletePayment('${p.id}')">✕</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch(e) { console.error(e); }
+  }
+
+  async function deletePayment(id) {
+    if (!confirm('Remover este registro?')) return;
+    await fetch('/api/payments/' + id, { method: 'DELETE' });
+    loadPayments();
+    showToast('Registro removido', 'success');
+  }
+
+  // =============================================================================
+  // WHATSAPP
+  // =============================================================================
+  let waPollInterval = null;
+
+  async function pollWAStatus() {
+    clearInterval(waPollInterval);
+    await checkWAStatus();
+    waPollInterval = setInterval(checkWAStatus, 3000);
+  }
+
+  async function checkWAStatus() {
+    try {
+      const r = await fetch('/api/whatsapp/status');
+      const data = await r.json();
+      
+      const dot = document.getElementById('sidebarWaDot');
+      const badge = document.getElementById('waStatusBadge');
+      
+      if (data.connected) {
+        dot?.classList.add('connected');
+        badge.textContent = 'WA: conectado';
+        badge.style.borderColor = 'rgba(0,229,160,0.4)';
+        badge.style.color = 'var(--accent)';
+        
+        document.getElementById('waIcon').textContent = '✅';
+        document.getElementById('waTitle').textContent = 'WhatsApp Conectado';
+        document.getElementById('waDesc').textContent = 'Seu WhatsApp está vinculado e pronto para enviar mensagens automaticamente.';
+        document.getElementById('waQrContainer').innerHTML = '';
+        document.getElementById('waConnectBtn').style.display = 'none';
+        document.getElementById('waDisconnectBtn').style.display = 'block';
+      } else {
+        dot?.classList.remove('connected');
+        badge.textContent = 'WA: desconectado';
+        badge.style.borderColor = '';
+        badge.style.color = '';
+        document.getElementById('waConnectBtn').style.display = 'block';
+        document.getElementById('waDisconnectBtn').style.display = 'none';
+
+        if (data.qr) {
+          document.getElementById('waIcon').textContent = '📷';
+          document.getElementById('waTitle').textContent = 'Escaneie o QR Code';
+          document.getElementById('waDesc').textContent = 'Abra o WhatsApp no celular → Dispositivos vinculados → Vincular dispositivo → Escanear QR Code';
+          document.getElementById('waQrContainer').innerHTML = `<div class="qr-container"><img src="${data.qr}" /></div>`;
+        } else if (data.connecting) {
+          document.getElementById('waIcon').textContent = '⏳';
+          document.getElementById('waTitle').textContent = 'Conectando...';
+          document.getElementById('waDesc').textContent = 'Aguarde, gerando QR Code...';
+          document.getElementById('waQrContainer').innerHTML = '';
+        } else {
+          document.getElementById('waIcon').textContent = '📱';
+          document.getElementById('waTitle').textContent = 'WhatsApp Desconectado';
+          document.getElementById('waDesc').textContent = 'Clique em conectar para gerar o QR Code e vincular seu WhatsApp ao sistema.';
+          document.getElementById('waQrContainer').innerHTML = '';
+        }
+      }
+    } catch(e) {}
+  }
+
+  async function connectWA() {
+    await fetch('/api/whatsapp/connect', { method: 'POST' });
+    showToast('Iniciando conexão...', 'info');
+    pollWAStatus();
+  }
+
+  async function disconnectWA() {
+    if (!confirm('Desconectar WhatsApp?')) return;
+    await fetch('/api/whatsapp/disconnect', { method: 'POST' });
+    clearInterval(waPollInterval);
+    checkWAStatus();
+    showToast('WhatsApp desconectado', 'info');
+  }
+
+  async function sendTestMessage() {
+    const phone = document.getElementById('testPhone').value.trim();
+    const message = document.getElementById('testMessage').value.trim();
+    if (!phone || !message) { showToast('Preencha telefone e mensagem', 'error'); return; }
+    
+    const r = await fetch('/api/whatsapp/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, message })
+    });
+    const data = await r.json();
+    showToast(data.success ? '✅ Mensagem enviada!' : '❌ Falha no envio', data.success ? 'success' : 'error');
+  }
+
+  // =============================================================================
+  // CONFIG
+  // =============================================================================
+  let currentConfig = null;
+
+  async function loadConfig() {
+    try {
+      const r = await fetch('/api/config');
+      currentConfig = await r.json();
+      document.getElementById('messageText').value = currentConfig.message || '';
+      updatePreview();
+      renderSchedules();
+    } catch(e) {}
+  }
+
+  function updatePreview() {
+    const msg = document.getElementById('messageText').value;
+    const preview = msg
+      .replace(/{nome}/g, '<strong style="color:var(--accent)">João Silva</strong>')
+      .replace(/{link_pix}/g, '<a href="#" style="color:var(--accent2)">https://pix.kiwify.com.br/abc123</a>');
+    document.getElementById('messagePreview').innerHTML = preview;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const ta = document.getElementById('messageText');
+    if (ta) ta.addEventListener('input', updatePreview);
+  });
+
+  async function saveMessage() {
+    const message = document.getElementById('messageText').value.trim();
+    if (!message) { showToast('Mensagem não pode estar vazia', 'error'); return; }
+    
+    await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    });
+    showToast('✅ Mensagem salva!', 'success');
+  }
+
+  function renderSchedules() {
+    if (!currentConfig) return;
+    const container = document.getElementById('schedulesContainer');
+    if (!container) return;
+    container.innerHTML = currentConfig.schedules.map(s => `
+      <div class="schedule-item">
+        <label class="toggle">
+          <input type="checkbox" data-id="${s.id}" ${s.active ? 'checked' : ''} onchange="toggleSchedule('${s.id}', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+        <div class="schedule-info">
+          <div class="schedule-name">${s.label}</div>
+          <div class="schedule-desc">Enviar ${s.label} após geração do PIX</div>
+        </div>
+        <span class="badge ${s.active ? 'badge-paid' : 'badge-pending'}">${s.active ? 'ativo' : 'inativo'}</span>
+      </div>
+    `).join('');
+  }
+
+  function toggleSchedule(id, active) {
+    if (!currentConfig) return;
+    const idx = currentConfig.schedules.findIndex(s => s.id === id);
+    if (idx !== -1) {
+      currentConfig.schedules[idx].active = active;
+      renderSchedules();
+    }
+  }
+
+  async function saveSchedules() {
+    await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ schedules: currentConfig.schedules })
+    });
+    showToast('✅ Agendamentos salvos!', 'success');
+  }
+
+  // =============================================================================
+  // WEBHOOKS
+  // =============================================================================
+  async function loadWebhookInfo() {
+    try {
+      const r = await fetch('/api/webhook-info');
+      const data = await r.json();
+      document.getElementById('wkKiwify').textContent = data.kiwify;
+      document.getElementById('wkHotmart').textContent = data.hotmart;
+      document.getElementById('wkTest').textContent = data.test;
+    } catch(e) {}
+  }
+
+  function copyWebhook(elementId) {
+    const text = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(text).then(() => showToast('URL copiada!', 'success'));
+  }
+
+  async function sendTestWebhook() {
+    const r = await fetch('/webhook/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer_name: 'Cliente Teste',
+        customer_phone: '5548999999999',
+        pix_link: 'https://pix.example.com/test123'
+      })
+    });
+    const data = await r.json();
+    showToast(data.success ? '✅ PIX de teste registrado!' : '❌ Erro ao registrar', data.success ? 'success' : 'error');
+    if (data.success) {
+      setTimeout(() => {
+        document.querySelector('[data-page="payments"]').click();
+      }, 1000);
+    }
+  }
+
+  // =============================================================================
+  // LOGS
+  // =============================================================================
+  async function loadLogs() {
+    try {
+      const r = await fetch('/api/logs');
+      const logs = await r.json();
+      const container = document.getElementById('logsFullContainer');
+      if (!logs.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>Nenhum log ainda</p></div>';
+        return;
+      }
+      container.innerHTML = logs.map(l => `
+        <div class="log-item">
+          <div class="log-dot ${l.type}"></div>
+          <div style="flex:1">${l.message}</div>
+          <div class="log-time">${formatDateTime(l.timestamp)}</div>
+        </div>
+      `).join('');
+    } catch(e) {}
+  }
+
+  // =============================================================================
+  // UTILS
+  // =============================================================================
+  function formatDateTime(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function formatPhone(phone) {
+    if (!phone) return '—';
+    const p = phone.replace(/\D/g, '');
+    if (p.length === 13) return `+${p.slice(0,2)} (${p.slice(2,4)}) ${p.slice(4,9)}-${p.slice(9)}`;
+    if (p.length === 12) return `+${p.slice(0,2)} (${p.slice(2,4)}) ${p.slice(4,8)}-${p.slice(8)}`;
+    return phone;
+  }
+
+  // =============================================================================
+  // INIT
+  // =============================================================================
+  loadStats();
+  loadRecentLogs();
+  loadConfig();
+  loadWebhookInfo();
+  checkWAStatus();
+  setInterval(() => { 
+    const activePage = document.querySelector('.page.active')?.id;
+    if (activePage === 'page-dashboard') { loadStats(); loadRecentLogs(); }
+    if (activePage === 'page-payments') loadPayments();
+  }, 15000);
+  setInterval(checkWAStatus, 5000);
+</script>
+</body>
+</html>
